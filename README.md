@@ -7,15 +7,18 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
-## About Laravel
+## PUZZLER
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Puzzler is a simple puzzle application. Participants can an oin simply by providing Name and Email. Please follow the below steps to set the project
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Run Migrations: php artisan migrate.
+- Run Seeder    : php artisan db:seed.
+- Visit root folder (localhost) : http://localhost/puzzler/public/ and [cache]([https://laravel.com/docs/cache]) localhost.
+
+## HOW TO PARTICIPATE
+- Enter your Name and Email.
+- You will be given a random string to enter words.
+- Score and alphabets available will be shown at the same page itself.
+- On completing the puzzle, You will be able to see your score, words and points gained for each words.
+- At the bottom of login page you have button to see topers and top-scored words.
 
