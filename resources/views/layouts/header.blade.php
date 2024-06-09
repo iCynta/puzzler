@@ -12,3 +12,5 @@
     </style>
     @stack('styles')
 </head>
+    <body>
+        <div class="container">

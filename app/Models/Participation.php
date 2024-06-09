@@ -4,12 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Participation extends Model
 {
     use HasFactory;
 
     protected $fillable = ['participant_id', 'string_id'];
+    
+    // Define the accessor
+    public function getFormattedCreatedAtAttribute()
+    {
+        return Carbon::parse($this->attributes['created_at'])->format('F j, Y, g:i a');
+    }
 
     public function participant()
     {
@@ -21,10 +28,11 @@ class Participation extends Model
         return $this->belongsTo(RandomString::class, 'string_id');
     }
     
-    public function participationDetail()
+    public function detail()
     {
         return $this->hasOne(ParticipationDetail::class);
     }
+
 }
 
 

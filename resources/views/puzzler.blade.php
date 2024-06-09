@@ -15,13 +15,16 @@
             .words-list span {
                 margin-right: 10px;
             }
+            #word_cloud span{
+               color:green;
+               margin-right: 10px; 
+            }
             .score {
                 margin-top: 20px;
             }
         </style>
     @endpush
-    <body>
-        <div class="container">
+
             <p class="lead text-secondary"> Welcome, {{ $participant->name }}. You joined with {{ $participant->email }}</p>
             <div class="row">            
                 <div class="col-md-3">
@@ -68,7 +71,7 @@
                     <button class="btn btn-md btn-danger" id="end_game">End Game</button>
                 </div>
             </div>    
-        </div>
+        
 
 
 
@@ -94,23 +97,20 @@
                     if (response.success) {
                         $('#word-response').html(response.message);
                         $('#total_score').text(response.total_score);
-                        $('#word_cloud').append('<span>' + response.word + ': ' + response.word_score + '</span>');
+                        $('#word_cloud').append('<span class="badge badge-success">' + response.word + ': ' + response.word_score + '</span> ');
                         $('#available_alphabets').text(response.alphabets_left);
                     } else {
                         $('#word-response').html(response.message); // Display error message
                     }
                 },
                 error: function (xhr, status, error) {
-                    // Handle error response
-                    $('#word-response').html('Error: ' + error); // Display error message
+                    $('#word-response').html('Error: ' + error); 
                 },
                 beforeSend: function () {
-                    // Before sending the request
-                    // You can show a loading spinner or disable the submit button
+                    // Can implement loader
                 },
                 complete: function () {
-                    // After completing the request (success or error)
-                    // You can hide the loading spinner or enable the submit button
+                    
                 }
             });
             // Ajax ends here
@@ -129,14 +129,19 @@
                     dataType: 'json',
                     success: function(response) {
                         if (response.success) {
-                            $('#word-response').text(response.message); // Display success message
-                            // Optionally, you can redirect the user or update the UI
+                             // Redirect to the welcome route with URL parameters
+                                var redirectUrl = "{{ route('welcome') }}";
+                                redirectUrl += "?message=" + encodeURIComponent(response.message);
+                                redirectUrl += "&score=" + response.score;
+                                redirectUrl += "&words=" + encodeURIComponent(response.words);
+                                window.location.href = redirectUrl;
                         } else {
                             $('#word-response').text(response.message); // Display error message
                         }
                     },
                     error: function(xhr, status, error) {
                         $('#word-response').text('Error: ' + error); // Display error message
+                        console.error('AJAX Error:', error);
                     }
                 });
             });

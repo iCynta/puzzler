@@ -4,49 +4,51 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Arr;
 use App\Models\Participation;
 use App\Models\ParticipationDetail;
 
 class PuzzlerController extends Controller {
 
-    public function checkWord(Request $request) {
+    private $usedLetters = []; // Track used letters by the student
+
+    public function checkWord(Request $request) 
+    {
         // Retrieve data from the session
         $randomString = session('random_string');
         $alphabetsLeft = session('alphabets_left');
         $wordsMade = session('words_made');
         $totalScore = session('total_score', 0); // Initialize total score if not set
-        //Only alphabets allowed
+        // Only alphabets allowed
         $word = strtoupper(preg_replace('/[^A-Za-z]/', '', $request->input('word')));
 
         // Validate the word against the alphabets left and other conditions
         if ($this->isValidWord($word, $alphabetsLeft) && !$this->isDuplicateWord($word, $wordsMade)) {
             // Check if the word is a real English word
             if ($this->isAnEnglishWord($word)) {
-                // Update alphabets left
+
                 $alphabetsLeft = $this->updateAlphabetsLeft($word, $alphabetsLeft);
-
-                // Update words made
-                $wordsMade[] = $word;
-
-                // Update session variables
+                $wordsMade[] = ['word' => $word, 'score' => strlen($word)];
+                $this->updateUsedLetters($word);
                 session(['alphabets_left' => $alphabetsLeft]);
                 session(['words_made' => $wordsMade]);
 
                 // Calculate score based on the number of letters used in the word
                 $wordScore = strlen($word);
                 $totalScore += $wordScore; // Add word score to total score
-                // Update total score in session
                 session(['total_score' => $totalScore]);
 
                 // Return success response with total score and word score
-                return response()->json(['success' => true,
-                            'message' => '<p class="text-success"> Good Job..! Move on.</p>',
+                return response()->json([
+                            'success' => true,
+                            'message' => '<p class="text-success">Congratzz! Move on.</p>',
                             'total_score' => $totalScore,
                             'word_score' => $wordScore,
                             'word' => $word,
-                            'alphabets_left' => $alphabetsLeft]);
+                            'alphabets_left' => $alphabetsLeft
+                ]);
             } else {
-                // Return error response for non-English word
                 return response()->json(['success' => false, 'message' => '<p class="text-danger">Word is not a valid English word.</p>']);
             }
         } else {
@@ -55,10 +57,15 @@ class PuzzlerController extends Controller {
         }
     }
 
-    private function isValidWord($word, $alphabetsLeft) {
+    private function updateUsedLetters($word) 
+    {
+        $wordLetters = str_split($word);
+        $this->usedLetters = array_unique(array_merge($this->usedLetters, $wordLetters));
+    }
+
+    private function isValidWord($word, $alphabetsLeft) 
+    {
         $wordArray = str_split($word);
-        //dd($wordArray);
-        //dd($alphabetsLeft);
         // Check if each letter in the word is in the alphabets left and within available repetitions.
         foreach ($wordArray as $letter) {
             if (($key = array_search($letter, $alphabetsLeft)) !== false) {
@@ -72,22 +79,18 @@ class PuzzlerController extends Controller {
         return true;
     }
 
-    private function isDuplicateWord($word, $wordsMade) {
-        if (is_array($wordsMade)) {
-            $wordsMadeString = implode(',', $wordsMade);
-        } else {
-            $wordsMadeString = $wordsMade;
+    private function isDuplicateWord($word, $wordsMade) 
+    {
+        foreach ($wordsMade as $wordData) {
+            if ($wordData['word'] === $word) {
+                return true; // Word is a duplicate
+            }
         }
-        $wordsMadeArray = explode(',', $wordsMadeString);
-
-        if (in_array($word, $wordsMadeArray)) {
-            return true; // Word is a duplicate
-        }
-
         return false; // Word is not a duplicate
     }
 
-    public function isAnEnglishWord($word) {
+    public function isAnEnglishWord($word) 
+    {
         // Initialize a cURL session
         $apiUrl = config('constants.WORD_IDENTIFIER') . $word;
         $ch = curl_init($apiUrl);
@@ -113,7 +116,8 @@ class PuzzlerController extends Controller {
         return false; // Word is not a real English word.
     }
 
-    private function updateAlphabetsLeft($word, $alphabetsLeft) {
+    private function updateAlphabetsLeft($word, $alphabetsLeft) 
+    {
         $wordAlphabets = str_split($word);
         $wordAlphabetCount = array_count_values($wordAlphabets);
 
@@ -130,15 +134,17 @@ class PuzzlerController extends Controller {
         return $alphabetsLeft; // Return the updated alphabetsLeft array
     }
 
-    public function endGame(Request $request) {
-        $sessionData = session()->all();
+    public function endGame(Request $request) 
+    {
+//        $sessions = session()->all();
+//        dd($sessions);
         $participationId = session('participant_id');
-        $words = session('words_made');
+        $wordsWithScores = session('words_made');
         $score = session('total_score');
 
         $participationDetail = new ParticipationDetail();
         $participationDetail->participation_id = $participationId;
-        $participationDetail->words_scores = json_encode($words);
+        $participationDetail->words_scores = json_encode($wordsWithScores);
         $participationDetail->save();
 
         // Updating score on participation table
@@ -148,8 +154,52 @@ class PuzzlerController extends Controller {
             $participation->score = $score;
             $participation->save();
         }
-        // Clear the session data 
+
+        // Clear the session data
         Session::flush();
-        return response()->json(['success' => true, 'message' => 'Game ended successfully.']);
+
+        return response()->json([
+            'success' => true,
+            'status' => 'GameEnded',
+            'message' => 'Game ended successfully.',
+            'score' => $score,
+            'words' => json_encode($wordsWithScores),
+        ]);
     }
+    
+    public function getHighScores() 
+    {
+        // Fetch the top ten highest-scoring submissions without duplicate words
+        $topScores = Participation::select('id', 'participant_id', 'score')
+            ->with(['details' => function ($query) {
+                $query->select('participation_id', 'words_scores')->orderByDesc('id');
+            }])
+            ->orderByDesc('score')
+            ->take(10)
+            ->get();
+
+        // Filter duplicate words in the top scores
+        $filteredScores = [];
+        foreach ($topScores as $score) {
+            $uniqueWords = [];
+            $filteredWordsScores = [];
+            foreach ($score->details as $detail) {
+                $wordsScores = json_decode($detail->words_scores, true);
+                foreach ($wordsScores as $wordScore) {
+                    if (!in_array($wordScore['word'], $uniqueWords)) {
+                        $uniqueWords[] = $wordScore['word'];
+                        $filteredWordsScores[] = $wordScore;
+                    }
+                }
+            }
+            if (!empty($filteredWordsScores)) {
+                $score->filteredWordsScores = $filteredWordsScores;
+                $filteredScores[] = $score;
+            }
+        }
+
+        return view('high_scores', ['topScores' => $filteredScores]);
+    }
+
+
 }
