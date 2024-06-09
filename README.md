@@ -9,7 +9,7 @@
 
 ## PUZZLER
 
-Puzzler is a simple puzzle application. Participants can an join simply by providing Name and Email. Please follow the below steps to set the project
+Puzzler is a simple puzzle application. Participants can an join simply by providing Name and Email. Please follow the below steps to setup the project
 
 - Run Migrations: php artisan migrate.
 - Run Seeder    : php artisan db:seed.
