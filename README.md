@@ -13,7 +13,7 @@ Puzzler is a simple puzzle application. Participants can an join simply by provi
 
 - Run Migrations: php artisan migrate.
 - Run Seeder    : php artisan db:seed.
-- Visit root folder (localhost) : http://localhost/puzzler/public/ and [cache]([https://laravel.com/docs/cache]) localhost.
+- Visit root folder (localhost) : http://localhost/puzzler/public/ ([https://laravel.com/docs/cache]).
 
 ## HOW TO PARTICIPATE
 - Enter your Name and Email.
