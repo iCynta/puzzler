@@ -12,7 +12,7 @@ class Participation extends Model
 
     protected $fillable = ['participant_id', 'string_id'];
     
-    // Define the accessor
+    // Get the date in presentable mode
     public function getFormattedCreatedAtAttribute()
     {
         return Carbon::parse($this->attributes['created_at'])->format('F j, Y, g:i a');
