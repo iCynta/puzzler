@@ -11,7 +11,7 @@ use App\Models\ParticipationDetail;
 
 class PuzzlerController extends Controller {
 
-    private $usedLetters = []; // Track used letters by the student
+    private $usedLetters = []; 
 
     public function checkWord(Request $request) 
     {
@@ -19,7 +19,7 @@ class PuzzlerController extends Controller {
         $randomString = session('random_string');
         $alphabetsLeft = session('alphabets_left');
         $wordsMade = session('words_made');
-        $totalScore = session('total_score', 0); // Initialize total score if not set
+        $totalScore = session('total_score', 0); 
         // Only alphabets allowed
         $word = strtoupper(preg_replace('/[^A-Za-z]/', '', $request->input('word')));
 
@@ -131,7 +131,7 @@ class PuzzlerController extends Controller {
             }
         }
 
-        return $alphabetsLeft; // Return the updated alphabetsLeft array
+        return $alphabetsLeft;
     }
 
     public function endGame(Request $request) 
