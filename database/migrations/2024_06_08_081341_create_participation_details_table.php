@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('participation_details', function (Blueprint $table) {
             $table->id();
             $table->foreignId('participation_id')->constrained()->onDelete('cascade');
-            $table->json('words_scores'); // JSON column to store words and scores
+            $table->json('words_scores'); 
             $table->timestamps();
             
             // Adding indexes
