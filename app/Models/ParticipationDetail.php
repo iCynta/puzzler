@@ -8,9 +8,9 @@ class ParticipationDetail extends Model
 {
     use HasFactory;
 
-    protected $table = 'participation_details'; // Define the table name
+    protected $table = 'participation_details'; 
 
-    protected $fillable = ['participation_id', 'words_scores']; // Define fillable fields
+    protected $fillable = ['participation_id', 'words_scores']; 
 
     public function participation()
     {
