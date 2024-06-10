@@ -66,7 +66,7 @@ class ParticipantController extends Controller {
     
     public function topScoringWords()
     {
-        // Retrieve all words_scores data from participation_details table using Eloquent
+        // Retrieve all words_scores data from participation_details table
         $participationDetails = ParticipationDetail::all();
 
         // Initialize an empty array to store words and their scores
